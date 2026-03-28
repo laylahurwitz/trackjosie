@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Trip 2025 ✈</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--th:#c8855a;--vn:#5a9e7a;--ph:#5a7ec8;--id:#b85a8a;--au:#8a7ac8;--bg:#faf9f6;--text:#1c1b18;--muted:#888070;--line:#e8e4dc;--nav-h:52px}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+    nav{position:fixed;inset:0 0 auto 0;z-index:1000;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(250,249,246,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--line)}
+    .nav-brand{font-family:'Playfair Display',serif;font-size:15px;letter-spacing:-.01em;white-space:nowrap}
+    .nav-brand em{font-style:italic;color:var(--muted)}
+    .nav-tabs{display:flex;gap:4px}
+    .nav-tab{padding:5px 14px;border-radius:20px;font-size:12px;font-family:inherit;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--muted);transition:all .2s;letter-spacing:.02em}
+    .nav-tab:hover{color:var(--text);background:rgba(0,0,0,.04)}
+    .nav-tab.active{color:var(--text);background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.15)}
+    #replay-btn{padding:5px 14px;border-radius:20px;font-size:12px;font-family:inherit;cursor:pointer;border:1px solid var(--th);background:transparent;color:var(--th);transition:all .2s}
+    #replay-btn:hover{background:var(--th);color:white}
+    .page{position:fixed;top:var(--nav-h);right:0;bottom:0;left:0;transition:opacity .3s ease}
+    .page.hidden{opacity:0;pointer-events:none}
+    #map-page{z-index:1}
+    #map{position:absolute;inset:0}
+    .leaflet-control-zoom{border:none!important;box-shadow:0 2px 12px rgba(0,0,0,.15)!important;border-radius:8px!important;overflow:hidden}
+    .leaflet-control-zoom a{background:rgba(255,255,255,.97)!important;color:#333!important;border:none!important;border-bottom:1px solid rgba(0,0,0,.08)!important;width:30px!important;height:30px!important;line-height:30px!important;font-size:16px!important;font-weight:300!important}
+    .leaflet-control-zoom a:last-child{border-bottom:none!important}
+    .leaflet-control-attribution{background:rgba(255,255,255,.7)!important;font-size:9px!important;border-radius:4px!important}
+    .leaflet-tooltip.stop-pill{background:rgba(255,255,255,.93)!important;border:none!important;box-shadow:0 2px 8px rgba(0,0,0,.14)!important;border-radius:10px!important;padding:3px 9px!important;font-family:'DM Sans',sans-serif!important;font-size:11px!important;font-weight:600!important;color:#1a1917!important;white-space:nowrap!important;transition:opacity .35s ease!important}
+    .leaflet-tooltip.stop-pill::before{display:none!important}
+    @keyframes pulseRing{0%{transform:scale(1);opacity:.65}100%{transform:scale(3.2);opacity:0}}
+    .pulse-ring{position:absolute;inset:0;border-radius:50%;animation:pulseRing 1.2s ease-out infinite}
+    #tip{position:fixed;z-index:900;pointer-events:none;background:rgba(250,249,246,.98);border:1px solid var(--line);border-radius:12px;padding:14px 18px;min-width:190px;max-width:265px;box-shadow:0 8px 40px rgba(0,0,0,.12);backdrop-filter:blur(12px);opacity:0;transform:translateY(6px);transition:opacity .15s,transform .15s}
+    #tip.show{opacity:1;transform:translateY(0)}
+    .tip-head{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+    .tip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .tip-name{font-family:'Playfair Display',serif;font-size:16px;line-height:1.2}
+    .tip-dates{font-size:10px;color:var(--muted);font-weight:300;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+    .tip-note{font-size:12px;color:var(--muted);font-weight:300;line-height:1.65}
+    #legend{position:absolute;bottom:24px;left:24px;z-index:500;background:rgba(255,255,255,.93);border:none;border-radius:14px;padding:14px 18px;box-shadow:0 4px 24px rgba(0,0,0,.1);backdrop-filter:blur(12px)}
+    .leg-title{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+    .leg-row{display:flex;align-items:center;gap:9px;margin-bottom:6px;font-size:11px;color:#555}
+    .leg-row:last-child{margin-bottom:0}
+    .leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+    #status{position:absolute;bottom:24px;right:24px;z-index:500;background:rgba(255,255,255,.93);border:none;border-radius:20px;padding:7px 16px;font-size:11px;color:var(--muted);letter-spacing:.04em;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.1);max-width:280px;text-align:center}
+    #itin-page{z-index:2;overflow-y:auto}
+    .itin-wrap{max-width:860px;margin:0 auto;padding-bottom:80px}
+    #toggle-btn{position:fixed;bottom:28px;right:28px;z-index:600;padding:8px 18px;border-radius:20px;font-size:12px;font-family:inherit;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--muted);transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.08);letter-spacing:.03em}
+    #toggle-btn:hover{color:var(--text);border-color:rgba(0,0,0,.2)}
+    .itin-head{padding:68px 72px 52px;border-bottom:1px solid var(--line)}
+    .itin-eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+    .itin-h1{font-family:'Playfair Display',serif;font-size:clamp(44px,7vw,80px);line-height:.9;letter-spacing:-.025em}
+    .itin-h1 em{font-style:italic;color:var(--muted)}
+    .country-sec{padding:48px 72px;border-bottom:1px solid var(--line)}
+    .cs-top{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+    .cs-flag{font-size:24px}
+    .cs-name{font-family:'Playfair Display',serif;font-size:clamp(26px,3.5vw,42px);letter-spacing:-.02em;line-height:1}
+    .cs-dates{font-size:11px;color:var(--muted);font-weight:300;letter-spacing:.07em;text-transform:uppercase;margin-bottom:32px;margin-left:38px}
+    .cs-alert{display:inline-block;font-size:11px;color:var(--vn);font-weight:300;background:rgba(90,158,122,.07);border:1px solid rgba(90,158,122,.2);border-radius:8px;padding:7px 12px;margin-bottom:20px;margin-left:38px}
+    .stop-list{display:flex;flex-direction:column}
+    .si{display:flex;padding:18px 0;border-bottom:1px solid var(--line)}
+    .si:first-child{border-top:1px solid var(--line)}
+    .si-left{width:130px;flex-shrink:0;font-size:10.5px;color:var(--muted);font-weight:300;letter-spacing:.04em;padding-top:3px;line-height:1.4}
+    .si-right{flex:1;min-width:0}
+    .si-where{font-size:15px;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+    .si-body{margin-top:9px}
+    .si-what{font-size:13px;color:var(--muted);font-weight:300;line-height:1.75}
+    .si-more{margin-top:9px;font-size:12px;color:var(--muted);font-weight:300;line-height:1.75}
+    .si-more ul{padding-left:16px}
+    .si-more li{margin-bottom:3px}
+    .itin-wrap.is-collapsed .si-body{display:none}
+    .itin-foot{text-align:center;padding:60px 40px 80px}
+    .foot-globe{font-size:36px;margin-bottom:16px}
+    .foot-big{font-family:'Playfair Display',serif;font-size:clamp(20px,3vw,30px);margin-bottom:14px}
+    .foot-route{font-size:11px;color:var(--muted);letter-spacing:.04em;line-height:2.8}
+    .arr{opacity:.3;padding:0 5px}
+    /* Mobile bottom sheet */
+    #sheet{display:none;position:fixed;bottom:0;left:0;right:0;z-index:800;pointer-events:none}
+    #sheet-inner{position:absolute;bottom:0;left:0;right:0;pointer-events:auto;background:rgba(250,249,246,.99);border-top:1px solid var(--line);border-radius:20px 20px 0 0;padding:12px 26px 130px;box-shadow:0 -8px 40px rgba(0,0,0,.14);transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(24px)}
+    #sheet.show{pointer-events:auto}
+    #sheet.show #sheet-inner{transform:translateY(0)}
+    .sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 18px}
+    .sheet-head{display:flex;align-items:center;gap:9px;margin-bottom:5px}
+    .sheet-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .sheet-name{font-family:'Playfair Display',serif;font-size:22px;line-height:1.2}
+    .sheet-dates{font-size:10px;color:var(--muted);font-weight:300;letter-spacing:.09em;text-transform:uppercase;margin-bottom:10px}
+    .sheet-note{font-size:13.5px;color:var(--muted);font-weight:300;line-height:1.72}
+    @media(max-width:768px){
+      .itin-head,.country-sec{padding-left:20px;padding-right:20px}
+      .cs-dates,.cs-alert{margin-left:0}
+      .si-left{width:80px;font-size:10px}
+      #status,#tip{display:none!important}
+      .nav-brand em{display:none}
+      .nav-tab{padding:5px 10px;font-size:11px}
+      #replay-btn{padding:5px 10px;font-size:11px}
+      /* Push above tiiny.host banner (~70px) + safe area */
+      #toggle-btn{bottom:90px;right:16px;padding:7px 14px}
+      #legend{bottom:90px;left:12px;padding:9px 12px}
+      .leg-title{font-size:8px;margin-bottom:6px}
+      .leg-row{font-size:10px;gap:6px;margin-bottom:4px}
+      .leg-dot{width:7px;height:7px}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Trip 2025 <em>/ Southeast Asia &amp; Beyond</em></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('map')">🗺 Map</button>
+    <button class="nav-tab" onclick="showPage('itinerary')">📋 Itinerary</button>
+  </div>
+  <button id="replay-btn" onclick="replay()">↺ Replay</button>
+</nav>
+
+<div class="page" id="map-page">
+  <div id="map"></div>
+  <div id="tip">
+    <div class="tip-head"><div class="tip-dot" id="tip-dot"></div><div class="tip-name" id="tip-name"></div></div>
+    <div class="tip-dates" id="tip-dates"></div>
+    <div class="tip-note" id="tip-note"></div>
+  </div>
+  <div id="legend">
+    <div class="leg-title">Countries</div>
+    <div class="leg-row"><div class="leg-dot" style="background:var(--th)"></div> Thailand</div>
+    <div class="leg-row"><div class="leg-dot" style="background:var(--vn)"></div> Vietnam</div>
+    <div class="leg-row"><div class="leg-dot" style="background:var(--ph)"></div> Philippines</div>
+    <div class="leg-row"><div class="leg-dot" style="background:var(--id)"></div> Indonesia</div>
+    <div class="leg-row"><div class="leg-dot" style="background:var(--au)"></div> Australia</div>
+  </div>
+  <div id="status"></div>
+  <!-- Mobile tap sheet -->
+  <div id="sheet" onclick="if(event.target===this)hideSheet()">
+    <div id="sheet-inner">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head"><div class="sheet-dot" id="sheet-dot"></div><div class="sheet-name" id="sheet-name"></div></div>
+      <div class="sheet-dates" id="sheet-dates"></div>
+      <div class="sheet-note" id="sheet-note"></div>
+    </div>
+  </div>
+</div>
+
+<div class="page hidden" id="itin-page">
+  <div class="itin-wrap" id="itin-wrap">
+    <div class="itin-head">
+      <p class="itin-eyebrow">April 5 – May 31, 2025 &nbsp;·&nbsp; 5 Countries &nbsp;·&nbsp; 8 Weeks</p>
+      <h1 class="itin-h1">Southeast<br>Asia <em>&amp;<br>Beyond</em></h1>
+    </div>
+
+    <div class="country-sec">
+      <div class="cs-top"><span class="cs-flag">🇹🇭</span><h2 class="cs-name" style="color:var(--th)">Thailand</h2></div>
+      <p class="cs-dates">April 5 – 14, 2025</p>
+      <div class="stop-list">
+        <div class="si"><div class="si-left">April 5</div><div class="si-right"><div class="si-where">Sattahip → Chiang Mai</div><div class="si-body"><p class="si-what">Teaching contract ends. Bus from Sattahip to Bangkok, then overnight sleeper train to Chiang Mai — arriving 7:15am on April 6.</p></div></div></div>
+        <div class="si"><div class="si-left">April 6 – 8</div><div class="si-right"><div class="si-where">Pa Pae Meditation Retreat</div><div class="si-body"><p class="si-what">Bus directly from Chiang Mai station. Two nights of silence and stillness before the adventure kicks off.</p></div></div></div>
+        <div class="si"><div class="si-left">April 8 – 10</div><div class="si-right"><div class="si-where">Pai</div><div class="si-body"><p class="si-what">Nolo Hub hostel (Josie booked — pay the rest in cash only on arrival). Head to Pai Authentic Travel on walking street; tell them you're at Nolo Hub and they'll call for a pickup.</p><div class="si-more"><ul><li>Pai Canyon sunset</li><li>Gender Bender Night (Wednesdays)</li><li>Free hostel activities every night</li><li>Bars on walking street</li></ul></div></div></div></div>
+        <div class="si"><div class="si-left">April 10 – 11</div><div class="si-right"><div class="si-where">Chiang Rai</div><div class="si-body"><p class="si-what">Van Pai → Chiang Mai (10:30am–2:20pm), then Green Bus from Chiang Mai Arcade Terminal 3 (5pm–8:45pm). Busket Hostel overnight, morning temples, evening bus back.</p><div class="si-more"><ul><li>White Temple (Wat Rong Khun)</li><li>Blue Temple (Wat Rong Suea Ten)</li><li>Explore downtown Chiang Rai midday</li></ul></div></div></div></div>
+        <div class="si"><div class="si-left">April 11 – 14</div><div class="si-right"><div class="si-where">Chiang Mai — Songkran 🎉</div><div class="si-body"><p class="si-what">Sherloft home hostel. Songkran water festival on April 13 — Thailand's biggest New Year celebration. Flight out April 14 at 10:30am, arriving Hanoi 6:10pm.</p><div class="si-more"><ul><li>Khao Soi Maesai (best khao soi in town)</li><li>Nong Ho Vintage Market</li><li>Jing Jai vintage and food market</li></ul></div></div></div></div>
+      </div>
+    </div>
+
+    <div class="country-sec">
+      <div class="cs-top"><span class="cs-flag">🇻🇳</span><h2 class="cs-name" style="color:var(--vn)">Vietnam</h2></div>
+      <p class="cs-dates">April 14 – 29, 2025</p>
+      <div class="cs-alert">⚠️ Get Vietnam visa early March — before leaving Thailand</div>
+      <div class="stop-list">
+        <div class="si"><div class="si-left">April 14 – 16</div><div class="si-right"><div class="si-where">Hanoi</div><div class="si-body"><p class="si-what">AirBnB in the Old Quarter (check in 3pm — 8 Phố Lý Nam Đế Hàng Mã). Post-It Café, Hoan Kiem Lake, museums, beer corners and live music.</p></div></div></div>
+        <div class="si"><div class="si-left">April 16 – 20</div><div class="si-right"><div class="si-where">Ha Giang Loop 🏍</div><div class="si-body"><p class="si-what">Sleeper bus Hanoi → Ha Giang night of the 16th. Four days on motorbikes through Vietnam's most dramatic mountain scenery. Return to Hanoi ~4pm on the 20th; stay at Rainbow Homestay (Số 8 ngõ 18B Tông Đản, Hoàn Kiếm).</p></div></div></div>
+        <div class="si"><div class="si-left">April 21 – 22</div><div class="si-right"><div class="si-where">Ha Long Bay ⛵</div><div class="si-body"><p class="si-what">Overnight boat cruise. Kayaking, limestone caves, emerald water. Ferry Cat Ba → Ha Long ($3). Overnight bus to Sapa departs 9:30pm from Ha Long International Cruise Port, arriving 6am.</p><div class="si-more"><ul><li>Cat Ba ferry times: 9am, 11:30am, 1pm, 3pm, 4pm</li></ul></div></div></div></div>
+        <div class="si"><div class="si-left">April 23 – 25</div><div class="si-right"><div class="si-where">Sapa</div><div class="si-body"><p class="si-what">Arrive 6am. Mao's trekking and homestay in Su Pan village. Bus to Hanoi airport April 25, fly Hanoi → Da Nang (7:45pm–8:45pm).</p></div></div></div>
+        <div class="si"><div class="si-left">April 25 – 29</div><div class="si-right"><div class="si-where">Hoi An ✂️</div><div class="si-body"><p class="si-what">Private room at Harmony Old Town Hostel. Go to 41 Tailor at the cloth market on Day 1 — clothes take a couple of days. Old Town is magical day and night.</p><div class="si-more"><ul><li>41 Tailor inside Hoi An cloth market — Day 1</li><li>Madam Khanh – The Banh Mi Queen (Bourdain's pick)</li><li>Linh Vidal Hair Salon</li><li>Mina Eyelash — lash lift and tint</li><li>Big linen shopping haul</li><li>Flight to Cebu April 29</li></ul></div></div></div></div>
+      </div>
+    </div>
+
+    <div class="country-sec">
+      <div class="cs-top"><span class="cs-flag">🇵🇭</span><h2 class="cs-name" style="color:var(--ph)">Philippines</h2></div>
+      <p class="cs-dates">April 29 – May 8, 2025</p>
+      <div class="stop-list">
+        <div class="si"><div class="si-left">April 29 – 30</div><div class="si-right"><div class="si-where">Cebu</div><div class="si-body"><p class="si-what">One night transit at Mactan Grand Golden Hotel near the airport. Early flight to Coron at 8:40am next morning.</p></div></div></div>
+        <div class="si"><div class="si-left">April 30 – May 2</div><div class="si-right"><div class="si-where">Coron</div><div class="si-body"><p class="si-what">Hop Hostel. Arrive at Outpost Beach Hostel by 6pm on May 1 for mandatory expedition briefing. Cash only — settle 14,440 PHP (~$242 USD) before it starts.</p><div class="si-more"><ul><li>Packing list: castawaytours.ph/what-to-pack</li></ul></div></div></div></div>
+        <div class="si"><div class="si-left">May 2 – 4</div><div class="si-right"><div class="si-where">Castaway Boat Trip ⛵</div><div class="si-body"><p class="si-what">Three days sailing Coron to El Nido across the Calamian Islands. Snorkeling, island stops, sleeping under stars on deck.</p></div></div></div>
+        <div class="si"><div class="si-left">May 4 – 8</div><div class="si-right"><div class="si-where">El Nido</div><div class="si-body"><p class="si-what">Frendz Hostel (Josie booked — pay remainder on arrival). Book Haqqy Life island hopping. On May 8: bus to Puerto Princesa (7am, ~6 hours), fly PPS → Bali (1:50pm).</p><div class="si-more"><ul><li>Haqqy Life island hopping tour</li><li>Nacpan Beach</li></ul></div></div></div></div>
+      </div>
+    </div>
+
+    <div class="country-sec">
+      <div class="cs-top"><span class="cs-flag">🇮🇩</span><h2 class="cs-name" style="color:var(--id)">Indonesia</h2></div>
+      <p class="cs-dates">May 8 – 14, 2025</p>
+      <div class="stop-list">
+        <div class="si"><div class="si-left">May 8 – 14</div><div class="si-right"><div class="si-where">Ubud, Bali 🌿</div><div class="si-body"><p class="si-what">Junjungan Suite villa for the week. Rice terraces, waterfalls, yoga, and spa — the perfect decompression before Australia.</p><div class="si-more"><ul><li>Tegalalang &amp; Jatiluwih rice terraces (Jatiluwih is UNESCO World Heritage)</li><li>Waterfalls: Sekumpul, Tukad Cepung, Leke Leke</li><li>Yogabarn, Alchemy, Lumeria; House of Chi for sound baths</li><li>Sayuri vegan, BLEND cafe, TIS Cafe, Camaya, Karti Bali spa</li></ul></div></div></div></div>
+        <div class="si"><div class="si-left">Day trip</div><div class="si-right"><div class="si-where">Nusa Penida 🐠</div><div class="si-body"><p class="si-what">Manta ray snorkel — ask operators to go to Manta Point specifically, not just Manta Bay. Check TripAdvisor for best operator.</p></div></div></div>
+        <div class="si"><div class="si-left">Explore</div><div class="si-right"><div class="si-where">Uluwatu 🌅</div><div class="si-body"><p class="si-what">Check events at Savaya. Suluban beach, Uluwatu temple at sunset. Worth the drive down from Ubud.</p></div></div></div>
+        <div class="si"><div class="si-left">If time allows</div><div class="si-right"><div class="si-where">Gili Islands + Lombok</div><div class="si-body"><p class="si-what">Pipes or Botchan hostel near Kuta. Trusted driver Rudi Alloevera: +62 818-0353-5335. Or Yogi Afriandi: +62 878-5093-0073.</p><div class="si-more"><ul><li>Tiu Kelep waterfall</li><li>Bukit Merese lookout at sunset</li><li>Pink sand beach</li><li>Ashtari restaurant — free shuttle from Kuta</li></ul></div></div></div></div>
+      </div>
+    </div>
+
+    <div class="country-sec">
+      <div class="cs-top"><span class="cs-flag">🇦🇺</span><h2 class="cs-name" style="color:var(--au)">Australia</h2></div>
+      <p class="cs-dates">May 14 – 31, 2025</p>
+      <div class="stop-list">
+        <div class="si"><div class="si-left">May 14 – 19</div><div class="si-right"><div class="si-where">Sydney</div><div class="si-body"><p class="si-what">AirBnB in Paddington or Surry Hills. Five days to explore the city and beaches before the road trip north.</p><div class="si-more"><ul><li>Henrietta Charcoal Chicken in Surry Hills (next to Yo Chi)</li></ul></div></div></div></div>
+        <div class="si"><div class="si-left">May 19 – 25</div><div class="si-right"><div class="si-where">Byron Bay 🚐</div><div class="si-body"><p class="si-what">Pick up the camper van. Probably one of the best weeks of the whole trip — slow mornings, beautiful beaches, great food and energy.</p><div class="si-more"><ul><li>Rae's Hotel happy hour</li><li>The Roadhouse Byron Bay</li><li>Byron General Store</li><li>B Smoothie Bar</li></ul></div></div></div></div>
+        <div class="si"><div class="si-left">May 25 – 28</div><div class="si-right"><div class="si-where">Noosa</div><div class="si-body"><p class="si-what">Road trip north with beautiful stops along the way. Fairy pools, Kari Island (Rainbow Beach), kayaks. Return camper van here.</p><div class="si-more"><ul><li>Road trip stops: Glass House Mountains, Australia Zoo, Mary Cairncross, Maleny, Montville, Eumundi</li><li>Where to eat: Mary Cairncross café, The Edge Restaurant, Sumi Open Kitchen</li></ul></div></div></div></div>
+        <div class="si"><div class="si-left">May 29 – 31</div><div class="si-right"><div class="si-where">Whitsundays 🐠</div><div class="si-body"><p class="si-what">The grand finale. Whitehaven Beach and the Great Barrier Reef. Fly home May 31.</p><div class="si-more"><ul><li>Sailaway Outer Reef from Port Douglas (~$220/person) — sailawayportdouglas.com</li><li>Wavelength tour also recommended</li></ul></div></div></div></div>
+      </div>
+    </div>
+
+    <div class="itin-foot">
+      <div class="foot-globe">🌏</div>
+      <p class="foot-big">8 weeks. 5 countries. One big adventure.</p>
+      <p class="foot-route">Sattahip<span class="arr">→</span>Chiang Mai<span class="arr">→</span>Hanoi<span class="arr">→</span>Ha Giang<span class="arr">→</span>Ha Long Bay<span class="arr">→</span>Sapa<span class="arr">→</span>Hoi An<span class="arr">→</span>Cebu<span class="arr">→</span>Coron<span class="arr">→</span>El Nido<span class="arr">→</span>Ubud<span class="arr">→</span>Sydney<span class="arr">→</span>Byron Bay<span class="arr">→</span>Noosa<span class="arr">→</span>Whitsundays</p>
+    </div>
+  </div>
+  <button id="toggle-btn" onclick="toggleCollapse()">Collapse Text</button>
+</div>
+
+<script>
+const CC={th:'#c8855a',vn:'#5a9e7a',ph:'#5a7ec8',id:'#b85a8a',au:'#8a7ac8'};
+const STOPS=[
+  {id:'sattahip',  name:'Sattahip',    lat:12.66, lng:100.90,c:'th',dates:'April 5',         note:'Teaching contract ends. The journey begins here.',label:true,ld:'right'},
+  {id:'chiangmai', name:'Chiang Mai',  lat:18.79, lng:98.98, c:'th',dates:'April 6 – 14',    note:'Base for northern Thailand. Pa Pae retreat, Pai, Chiang Rai, and Songkran Apr 13.',label:true,ld:'right'},
+  {id:'papae',     name:'Pa Pae',      lat:19.15, lng:98.35, c:'th',dates:'April 6 – 8',     note:'Two nights of silence and stillness.',label:true,ld:'left',spur:true},
+  {id:'pai',       name:'Pai',         lat:19.36, lng:98.44, c:'th',dates:'April 8 – 10',    note:'Nolo Hub hostel. Pai Canyon, Gender Bender Night.',label:true,ld:'left',spur:true},
+  {id:'chiangrai', name:'Chiang Rai',  lat:19.91, lng:99.83, c:'th',dates:'April 10 – 11',   note:'White Temple & Blue Temple. Day trip from Chiang Mai.',label:true,ld:'right',spur:true},
+  {id:'hanoi',     name:'Hanoi',       lat:21.03, lng:105.85,c:'vn',dates:'April 14 – 25',   note:'Old Quarter AirBnB. Base for Ha Giang Loop, Ha Long Bay, and Sapa.',label:true,ld:'right'},
+  {id:'hagiang',   name:'Ha Giang',    lat:22.82, lng:104.98,c:'vn',dates:'April 16 – 20',   note:'4 days on motorbikes through Vietnam\'s most dramatic mountains.',label:true,ld:'left',spur:true},
+  {id:'halong',    name:'Ha Long Bay', lat:20.91, lng:107.18,c:'vn',dates:'April 21 – 22',   note:'Overnight boat. Kayaking, limestone caves, emerald water.',label:true,ld:'right',spur:true},
+  {id:'sapa',      name:'Sapa',        lat:22.34, lng:103.84,c:'vn',dates:'April 23 – 25',   note:'Mao\'s trekking and homestay in Su Pan village.',label:true,ld:'bottom',spur:true},
+  {id:'hoian',     name:'Hoi An',      lat:15.88, lng:108.34,c:'vn',dates:'April 25 – 29',   note:'Harmony Old Town Hostel. 41 Tailor Day 1, Banh Mi Queen, lash lift.',label:true,ld:'right'},
+  {id:'cebu',      name:'Cebu',        lat:10.32, lng:123.90,c:'ph',dates:'April 29 – 30',   note:'One night transit. Mactan Grand Golden Hotel near the airport.',label:true,ld:'right'},
+  {id:'coron',     name:'Coron',       lat:12.00, lng:120.20,c:'ph',dates:'April 30 – May 2',note:'Hop Hostel. Castaway briefing 6pm May 1. Pay 14,440 PHP cash.',label:true,ld:'left'},
+  {id:'elnido',    name:'El Nido',     lat:11.18, lng:119.40,c:'ph',dates:'May 4 – 8',        note:'Frendz Hostel. Haqqy Life island hopping, Nacpan Beach.',label:true,ld:'left'},
+  {id:'ubud',      name:'Ubud, Bali',  lat:-8.51, lng:115.26,c:'id',dates:'May 8 – 14',       note:'Junjungan Suite villa. Rice terraces, waterfalls, Yogabarn, spa.',label:true,ld:'right'},
+  {id:'sydney',    name:'Sydney',      lat:-33.87,lng:151.21,c:'au',dates:'May 14 – 19',       note:'AirBnB in Paddington/Surry Hills. City, beaches, Henrietta Charcoal Chicken.',label:true,ld:'left'},
+  {id:'byronbay',  name:'Byron Bay',   lat:-28.65,lng:153.62,c:'au',dates:'May 19 – 25',       note:'Camper van! Rae\'s Hotel, The Roadhouse, Byron General Store.',label:true,ld:'left'},
+  {id:'noosa',     name:'Noosa',       lat:-26.39,lng:153.09,c:'au',dates:'May 25 – 28',       note:'Fairy pools, Rainbow Beach, kayaks. Return camper van here.',label:true,ld:'left'},
+  {id:'whitsundays',name:'Whitsundays',lat:-20.27,lng:148.72,c:'au',dates:'May 29 – 31',       note:'Whitehaven Beach, Great Barrier Reef. The grand finale. ✨',label:true,ld:'left'}
+];
+const MAIN=[
+  {from:'sattahip',to:'chiangmai',dur:1800},{from:'chiangmai',to:'hanoi',dur:2000},
+  {from:'hanoi',to:'hoian',dur:1800},{from:'hoian',to:'cebu',dur:2000},
+  {from:'cebu',to:'coron',dur:1400},{from:'coron',to:'elnido',dur:1600},
+  {from:'elnido',to:'ubud',dur:2000},{from:'ubud',to:'sydney',dur:2400},
+  {from:'sydney',to:'byronbay',dur:1200},{from:'byronbay',to:'noosa',dur:1000},
+  {from:'noosa',to:'whitsundays',dur:1200}
+];
+const SPURS={
+  chiangmai:[{from:'chiangmai',to:'papae',dur:500},{from:'papae',to:'pai',dur:500},{from:'chiangmai',to:'chiangrai',dur:500}],
+  hanoi:[{from:'hanoi',to:'hagiang',dur:500},{from:'hanoi',to:'halong',dur:500},{from:'hanoi',to:'sapa',dur:500}]
+};
+
+const byId=id=>STOPS.find(s=>s.id===id);
+let map,markers={},lines=[],animating=false,pulseMarker=null;
+
+function initMap(){
+  map=L.map('map',{zoomControl:true,renderer:L.svg(),minZoom:3,maxZoom:12}).fitBounds([[-42,93],[27,160]],{padding:[80,80]});
+  map.zoomControl.setPosition('topright');
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains:'abcd',maxZoom:19,
+    r:window.devicePixelRatio>1?'@2x':''
+  }).addTo(map);
+  // Spur labels fade in when zoomed in enough to avoid crowding
+  map.on('click',()=>{if(isTouch)hideSheet();});
+  map.on('zoomend', updateSpurLabels);
+}
+
+function gc(la1,lo1,la2,lo2,n=80){
+  const D=Math.PI/180,R=180/Math.PI;
+  const p1=la1*D,l1=lo1*D,p2=la2*D,l2=lo2*D;
+  const a=Math.sin((p2-p1)/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin((l2-l1)/2)**2;
+  const d=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  if(d<.005)return[[la1,lo1],[la2,lo2]];
+  const pts=[];
+  for(let i=0;i<=n;i++){
+    const t=i/n,A=Math.sin((1-t)*d)/Math.sin(d),B=Math.sin(t*d)/Math.sin(d);
+    const x=A*Math.cos(p1)*Math.cos(l1)+B*Math.cos(p2)*Math.cos(l2);
+    const y=A*Math.cos(p1)*Math.sin(l1)+B*Math.cos(p2)*Math.sin(l2);
+    const z=A*Math.sin(p1)+B*Math.sin(p2);
+    pts.push([Math.atan2(z,Math.sqrt(x*x+y*y))*R,Math.atan2(y,x)*R]);
+  }
+  return pts;
+}
+
+function animLine(pts,color,weight,dur){
+  return new Promise(resolve=>{
+    const glow=L.polyline([],{color,weight:weight+6,opacity:.15,lineCap:'round',lineJoin:'round'}).addTo(map);
+    const line=L.polyline([],{color,weight,opacity:.88,lineCap:'round',lineJoin:'round'}).addTo(map);
+    lines.push(glow,line);
+    const t0=performance.now();
+    function frame(now){
+      const t=Math.min((now-t0)/dur,1);
+      const e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+      const sl=pts.slice(0,Math.max(2,Math.round(e*pts.length)));
+      glow.setLatLngs(sl);line.setLatLngs(sl);
+      t<1?requestAnimationFrame(frame):(glow.setLatLngs(pts),line.setLatLngs(pts),resolve());
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+function showPulse(s){
+  removePulse();
+  const col=CC[s.c],sz=32;
+  pulseMarker=L.marker([s.lat,s.lng],{
+    icon:L.divIcon({
+      html:`<div style="position:relative;width:${sz}px;height:${sz}px"><div class="pulse-ring" style="background:${col}"></div></div>`,
+      className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]
+    }),
+    zIndexOffset:-200,interactive:false
+  }).addTo(map);
+}
+function removePulse(){if(pulseMarker){map.removeLayer(pulseMarker);pulseMarker=null;}}
+
+const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+
+function showSheet(s,col){
+  document.getElementById('sheet-dot').style.background=col;
+  document.getElementById('sheet-name').textContent=s.name;
+  document.getElementById('sheet-dates').textContent=s.dates;
+  document.getElementById('sheet-note').textContent=s.note;
+  const sh=document.getElementById('sheet');
+  sh.style.display='block';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>sh.classList.add('show')));
+}
+function hideSheet(){
+  const sh=document.getElementById('sheet');
+  sh.classList.remove('show');
+  setTimeout(()=>{if(!sh.classList.contains('show'))sh.style.display='none';},350);
+}
+
+const tip=document.getElementById('tip');
+function addMarker(s){
+  if(markers[s.id])return;
+  const col=CC[s.c],r=8,sz=r*2+8,cx=sz/2;
+  const icon=L.divIcon({
+    html:`<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}" style="overflow:visible;display:block"><circle cx="${cx}" cy="${cx}" r="${r}" fill="${col}" stroke="white" stroke-width="2.5"/></svg>`,
+    className:'',iconSize:[sz,sz],iconAnchor:[cx,cx]
+  });
+  const m=L.marker([s.lat,s.lng],{icon,zIndexOffset:100}).addTo(map);
+  if(s.label){
+    const off=s.spur
+      ? (s.ld==='left'?[-2,0]:s.ld==='bottom'?[0,2]:[2,0])
+      : (s.ld==='left'?[-6,0]:[6,0]);
+    m.bindTooltip(s.name,{permanent:true,direction:s.ld||'right',className:'stop-pill',offset:off});
+    if(s.spur){
+      setTimeout(()=>{
+        const el=m.getTooltip()&&m.getTooltip().getElement();
+        if(el){el.style.opacity='0';el.style.pointerEvents='none';}
+      },30);
+    }
+  }
+  if(isTouch){
+    m.on('click',e=>{L.DomEvent.stopPropagation(e);showSheet(s,col);});
+  } else {
+    m.on('mouseover',()=>{
+      document.getElementById('tip-dot').style.background=col;
+      document.getElementById('tip-name').textContent=s.name;
+      document.getElementById('tip-dates').textContent=s.dates;
+      document.getElementById('tip-note').textContent=s.note;
+      tip.classList.add('show');
+    });
+    m.on('mousemove',e=>{
+      const x=e.originalEvent.clientX,y=e.originalEvent.clientY,w=tip.offsetWidth,h=tip.offsetHeight;
+      let tx=x+18,ty=y-h/2;
+      if(tx+w>window.innerWidth-16)tx=x-w-18;
+      ty=Math.max(60,Math.min(ty,window.innerHeight-h-16));
+      tip.style.left=tx+'px';tip.style.top=ty+'px';
+    });
+    m.on('mouseout',()=>tip.classList.remove('show'));
+  }
+  markers[s.id]=m;
+}
+
+// Show spur labels only when zoomed in enough that they won't crowd each other
+function updateSpurLabels(){
+  const show=map.getZoom()>=5;
+  STOPS.filter(s=>s.spur&&s.label).forEach(s=>{
+    const m=markers[s.id];
+    if(!m)return;
+    const tt=m.getTooltip();
+    if(!tt)return;
+    const el=tt.getElement();
+    if(!el)return;
+    el.style.opacity=show?'1':'0';
+    el.style.pointerEvents=show?'auto':'none';
+  });
+}
+
+const statusEl=document.getElementById('status');
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function runAnim(){
+  if(animating)return;
+  animating=true;
+  Object.values(markers).forEach(m=>map.removeLayer(m));
+  lines.forEach(l=>map.removeLayer(l));
+  Object.keys(markers).forEach(k=>delete markers[k]);
+  lines.length=0;removePulse();
+  const start=byId('sattahip');
+  showPulse(start);addMarker(start);
+  statusEl.textContent='Journey starts in Sattahip, Thailand';
+  await delay(500);
+  for(let i=0;i<MAIN.length;i++){
+    const leg=MAIN[i],from=byId(leg.from),to=byId(leg.to);
+    statusEl.textContent=`${from.name} → ${to.name}`;
+    showPulse(from);
+    await animLine(gc(from.lat,from.lng,to.lat,to.lng),CC[to.c],2.5,leg.dur);
+    removePulse();addMarker(to);showPulse(to);
+    const spurs=SPURS[leg.to];
+    if(spurs){await delay(180);for(const sp of spurs){const sf=byId(sp.from),st=byId(sp.to);await animLine(gc(sf.lat,sf.lng,st.lat,st.lng,28),CC[st.c],1.6,sp.dur);addMarker(st);await delay(60);}}
+    await delay(220);
+  }
+  removePulse();
+  statusEl.textContent='8 weeks · 5 countries · one big adventure ✨';
+  animating=false;
+}
+function replay(){if(!animating)runAnim();}
+
+function showPage(p){
+  const mp=document.getElementById('map-page'),ip=document.getElementById('itin-page');
+  const tabs=document.querySelectorAll('.nav-tab'),rb=document.getElementById('replay-btn');
+  if(p==='map'){ip.classList.add('hidden');mp.classList.remove('hidden');tabs[0].classList.add('active');tabs[1].classList.remove('active');rb.style.visibility='visible';setTimeout(()=>map&&map.invalidateSize(),50);}
+  else{mp.classList.add('hidden');ip.classList.remove('hidden');tabs[0].classList.remove('active');tabs[1].classList.add('active');rb.style.visibility='hidden';}
+}
+
+function toggleCollapse(){
+  const wrap=document.getElementById('itin-wrap'),btn=document.getElementById('toggle-btn');
+  const collapsed=wrap.classList.toggle('is-collapsed');
+  btn.textContent=collapsed?'Expand Text':'Collapse Text';
+  if(collapsed)document.getElementById('itin-page').scrollTop=0;
+}
+
+window.addEventListener('load',()=>{initMap();setTimeout(runAnim,700);});
+</script>
+</body>
+</html>
