@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>Trip 2025 ✈</title>
+  <title>Where's Josie?</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -78,7 +78,7 @@
     .arr{opacity:.3;padding:0 5px}
     /* Mobile bottom sheet */
     #sheet{display:none;position:fixed;bottom:0;left:0;right:0;z-index:800;pointer-events:none}
-    #sheet-inner{position:absolute;bottom:0;left:0;right:0;pointer-events:auto;background:rgba(250,249,246,.99);border-top:1px solid var(--line);border-radius:20px 20px 0 0;padding:12px 26px 130px;box-shadow:0 -8px 40px rgba(0,0,0,.14);transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(24px)}
+    #sheet-inner{position:absolute;bottom:0;left:0;right:0;pointer-events:auto;background:rgba(250,249,246,.99);border-top:1px solid var(--line);border-radius:20px 20px 0 0;padding:12px 26px 40px;box-shadow:0 -8px 40px rgba(0,0,0,.14);transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(24px)}
     #sheet.show{pointer-events:auto}
     #sheet.show #sheet-inner{transform:translateY(0)}
     .sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 18px}
@@ -95,9 +95,9 @@
       .nav-brand em{display:none}
       .nav-tab{padding:5px 10px;font-size:11px}
       #replay-btn{padding:5px 10px;font-size:11px}
-      /* Push above tiiny.host banner (~70px) + safe area */
-      #toggle-btn{bottom:90px;right:16px;padding:7px 14px}
-      #legend{bottom:90px;left:12px;padding:9px 12px}
+      /* No banner — normal positions */
+      #toggle-btn{bottom:max(20px,env(safe-area-inset-bottom));right:16px;padding:7px 14px}
+      #legend{bottom:max(16px,env(safe-area-inset-bottom));left:12px;padding:9px 12px}
       .leg-title{font-size:8px;margin-bottom:6px}
       .leg-row{font-size:10px;gap:6px;margin-bottom:4px}
       .leg-dot{width:7px;height:7px}
@@ -107,7 +107,7 @@
 <body>
 
 <nav>
-  <div class="nav-brand">Trip 2025 <em>/ Southeast Asia &amp; Beyond</em></div>
+  <div class="nav-brand">Where's Josie? <em>/ Southeast Asia &amp; Beyond</em></div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('map')">🗺 Map</button>
     <button class="nav-tab" onclick="showPage('itinerary')">📋 Itinerary</button>
@@ -146,7 +146,7 @@
   <div class="itin-wrap" id="itin-wrap">
     <div class="itin-head">
       <p class="itin-eyebrow">April 5 – May 31, 2025 &nbsp;·&nbsp; 5 Countries &nbsp;·&nbsp; 8 Weeks</p>
-      <h1 class="itin-h1">Southeast<br>Asia <em>&amp;<br>Beyond</em></h1>
+      <h1 class="itin-h1">Where's<br><em>Josie?</em></h1>
     </div>
 
     <div class="country-sec">
